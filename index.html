@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linear Regression Calculator</title>
+    
+    <!-- Google Fonts for a modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js from CDN for plotting the graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- MathJax for professional equation rendering -->
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+        svg: {
+          linebreaks: { automatic: true, width: "90%"}
+        }
+      };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+    </script>
+
+    <style>
+        /* General Styling and Variables */
+        :root {
+            --primary-color: #000444;
+            --secondary-color: #f5f7fa;
+            --text-color: #333;
+            --border-color: #dce1e6;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --border-radius: 8px;
+        }
+
+        body.dark-mode {
+            --primary-color: #5899ff;
+            --secondary-color: #121212;
+            --text-color: #e0e0e0;
+            --border-color: #333;
+            --card-bg: #1e1e1e;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Main container for the application */
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            box-sizing: border-box;
+            transition: background-color 0.3s;
+            position: relative;
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin: 0;
+            font-weight: 700;
+            flex-grow: 1; /* Allow title to take up space */
+        }
+
+        /* Theme Toggle Switch */
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem; /* Space between icons and switch */
+            flex-shrink: 0; /* Prevent switcher from shrinking */
+        }
+        .theme-icon {
+            width: 24px;
+            height: 24px;
+            stroke: var(--text-color);
+            stroke-width: 1.5;
+            fill: none;
+            transition: stroke 0.3s, opacity 0.3s;
+        }
+        body:not(.dark-mode) .moon-icon {
+            opacity: 0.5;
+        }
+        body.dark-mode .sun-icon {
+            opacity: 0.5;
+        }
+
+        .theme-switch {
+            display: inline-block;
+            height: 24px;
+            position: relative;
+            width: 48px;
+        }
+        .theme-switch input {
+            display:none;
+        }
+        .slider {
+            background-color: #ccc;
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            background-color: #fff;
+            bottom: 4px;
+            content: "";
+            height: 16px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 16px;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Styling for card-like sections */
+        .card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        /* Input fields and buttons */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            box-sizing: border-box;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 4, 68, 0.2);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 0.85rem;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #00077A;
+        }
+        body.dark-mode .btn:hover {
+            background-color: #79aeff;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Dynamic input fields layout */
+        #data-inputs-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .input-pair {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .input-pair .index {
+            font-weight: 600;
+            color: #555;
+        }
+        body.dark-mode .input-pair .index {
+             color: #aaa;
+        }
+
+
+        /* Results section */
+        #results-section {
+            display: none; /* Initially hidden */
+            margin-top: 2rem;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Process Table Styling */
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: right;
+            border: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: var(--card-bg);
+        }
+
+        tfoot tr {
+            background-color: var(--secondary-color);
+            font-weight: 700;
+        }
+
+        /* Summary results styling */
+        #summary-results .equation-block {
+            font-size: 1.1rem;
+            background: var(--secondary-color);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin: 1rem 0;
+            border: 1px solid var(--border-color);
+            line-height: 2;
+            overflow-x: auto; /* Allow scrolling only if needed */
+        }
+
+        #summary-results .equation-block strong {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            display: block;
+            margin-bottom: 1rem;
+        }
+        
+        #summary-results .final-equation {
+             font-size: 1.25rem;
+             font-weight: 600;
+             text-align: center;
+        }
+
+        #summary-results hr {
+            margin: 2rem 0;
+            border: none;
+            border-top: 1px solid var(--border-color);
+        }
+
+
+        /* Error message styling */
+        #error-message {
+            color: #d9534f;
+            background-color: #f2dede;
+            border: 1px solid #ebccd1;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-top: 1rem;
+            display: none; /* Initially hidden */
+        }
+        
+        /* Chart container */
+        #chart-container {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            height: 450px; /* Fixed height for the graph */
+            position: relative;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 540px) {
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+                margin-bottom: 1.5rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+                order: 2; /* Move title below switcher */
+            }
+            .theme-switch-wrapper {
+                order: 1; /* Move switcher above title */
+                position: static; /* Remove absolute positioning */
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="container">
+        <div class="header-container">
+            <h1>Linear Regression Calculator</h1>
+            <div class="theme-switch-wrapper">
+                <!-- Sun Icon -->
+                <svg class="theme-icon sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+                </svg>
+                <label class="theme-switch" for="theme-toggle">
+                    <input type="checkbox" id="theme-toggle" />
+                    <span class="slider round"></span>
+                </label>
+                <!-- Moon Icon -->
+                <svg class="theme-icon moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Step 1: Input number of data points -->
+        <div class="card" id="setup-card">
+            <div class="form-group">
+                <label for="num-points">Enter the number of data points (N):</label>
+                <input type="number" id="num-points" placeholder="e.g., 5" min="2">
+            </div>
+            <button id="generate-btn" class="btn">Generate Input Fields</button>
+        </div>
+
+        <!-- Step 2: Dynamically generated data inputs -->
+        <div class="card" id="data-input-card" style="display: none;">
+            <p>Enter your X and Y data points below.</p>
+            <div id="data-inputs-container"></div>
+            <button id="calculate-btn" class="btn" style="margin-top: 1.5rem;">Calculate Regression</button>
+        </div>
+        
+        <!-- Error message display area -->
+        <div id="error-message"></div>
+
+        <!-- Step 3: Results display area -->
+        <section id="results-section">
+            
+            <!-- Intermediate Calculation Table -->
+            <div>
+                <h2>Calculation Process</h2>
+                <div class="table-container">
+                    <table id="process-table">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>xᵢ</th>
+                                <th>yᵢ</th>
+                                <th>xᵢ²</th>
+                                <th>yᵢ²</th>
+                                <th>xᵢyᵢ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="process-table-body"></tbody>
+                        <tfoot id="process-table-foot"></tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Final Regression Results -->
+            <div>
+                <h2>Regression Results</h2>
+                <div id="summary-results" class="card"></div>
+            </div>
+
+            <!-- Regression Graph -->
+            <div>
+                <h2>Regression Graph</h2>
+                <div id="chart-container">
+                    <canvas id="regression-chart"></canvas>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        // DOM element references
+        const generateBtn = document.getElementById('generate-btn');
+        const calculateBtn = document.getElementById('calculate-btn');
+        const numPointsInput = document.getElementById('num-points');
+        const dataInputsContainer = document.getElementById('data-inputs-container');
+        const dataInputCard = document.getElementById('data-input-card');
+        const resultsSection = document.getElementById('results-section');
+        const errorMessageDiv = document.getElementById('error-message');
+        const themeToggle = document.getElementById('theme-toggle');
+        
+        // Global state variables
+        let regressionChart = null;
+        let lastChartData = null; // To store data for theme toggling
+        let currentTheme = 'light';
+
+        /**
+         * Event listener for the "Generate Input Fields" button.
+         */
+        generateBtn.addEventListener('click', () => {
+            const n = parseInt(numPointsInput.value, 10);
+            if (isNaN(n) || n < 2) {
+                showError("Please enter a valid number of data points (at least 2).");
+                return;
+            }
+            hideError();
+
+            dataInputsContainer.innerHTML = '';
+            for (let i = 1; i <= n; i++) {
+                const inputPairDiv = document.createElement('div');
+                inputPairDiv.className = 'input-pair';
+                inputPairDiv.innerHTML = `
+                    <span class="index">${i}.</span>
+                    <input type="number" class="x-input" placeholder="x${i}" aria-label="X value for point ${i}">
+                    <input type="number" class="y-input" placeholder="y${i}" aria-label="Y value for point ${i}">
+                `;
+                dataInputsContainer.appendChild(inputPairDiv);
+            }
+            dataInputCard.style.display = 'block';
+            resultsSection.style.display = 'none';
+        });
+
+        /**
+         * Event listener for the "Calculate Regression" button.
+         */
+        calculateBtn.addEventListener('click', () => {
+            const xInputs = document.querySelectorAll('.x-input');
+            const yInputs = document.querySelectorAll('.y-input');
+            const xValues = [], yValues = [];
+
+            let isValid = true;
+            for (let i = 0; i < xInputs.length; i++) {
+                const xVal = parseFloat(xInputs[i].value);
+                const yVal = parseFloat(yInputs[i].value);
+                
+                if (isNaN(xVal) || isNaN(yVal)) {
+                    showError("All input fields must contain valid numbers. Please check your data.");
+                    isValid = false;
+                    break;
+                }
+                xValues.push(xVal);
+                yValues.push(yVal);
+            }
+            
+            if (!isValid) {
+                resultsSection.style.display = 'none';
+                return;
+            }
+            hideError();
+
+            const n = xValues.length;
+            let sum_x = 0, sum_y = 0, sum_xy = 0, sum_x_sq = 0, sum_y_sq = 0;
+            const tableData = [];
+
+            for (let i = 0; i < n; i++) {
+                const x = xValues[i], y = yValues[i];
+                const x_sq = x * x, y_sq = y * y, xy = x * y;
+                sum_x += x; sum_y += y; sum_x_sq += x_sq; sum_y_sq += y_sq; sum_xy += xy;
+                tableData.push({ no: i + 1, x, y, x_sq, y_sq, xy });
+            }
+
+            const b_numerator = n * sum_xy - sum_x * sum_y;
+            const b_denominator = n * sum_x_sq - sum_x * sum_x;
+            const b = b_denominator === 0 ? 0 : b_numerator / b_denominator;
+            const a = (sum_y - b * sum_x) / n;
+            
+            const r_sq_numerator = (n * sum_xy - sum_x * sum_y) ** 2;
+            const r_sq_denominator = (n * sum_x_sq - sum_x ** 2) * (n * sum_y_sq - sum_y ** 2);
+            const r_sq = r_sq_denominator === 0 ? 1 : r_sq_numerator / r_sq_denominator;
+            
+            let delta_y_sq = 0, delta_y = 0, delta_b = 0, tk = 0;
+            if (n > 2) {
+                const sse = sum_y_sq - a * sum_y - b * sum_xy; // Sum of Squared Errors
+                if (sse >= 0) {
+                    delta_y_sq = sse / (n - 2);
+                    delta_y = Math.sqrt(delta_y_sq);
+                }
+                
+                const b_denom_for_db = n * sum_x_sq - sum_x * sum_x;
+                if (b_denom_for_db > 0) {
+                    delta_b = delta_y * Math.sqrt(n / b_denom_for_db);
+                }
+
+                if (b !== 0) {
+                    tk = (1 - (delta_b / Math.abs(b))) * 100;
+                }
+            }
+            
+            const sums = { sum_x, sum_y, sum_xy, sum_x_sq, sum_y_sq };
+            const results = { a, b, r_sq, delta_b, delta_y_sq, delta_y, tk };
+            
+            lastChartData = { xValues, yValues, a, b }; // Store data for theme changes
+
+            displayProcessTable(tableData, sums);
+            displaySummaryResults(results, sums, n);
+            displayRegressionGraph(xValues, yValues, a, b);
+
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        /**
+         * Fills the intermediate calculation table with data.
+         */
+        function displayProcessTable(data, sums) {
+            const tableBody = document.getElementById('process-table-body');
+            const tableFoot = document.getElementById('process-table-foot');
+            tableBody.innerHTML = '';
+            data.forEach(row => {
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>${row.no}</td>
+                        <td>${formatNumber(row.x, 'html')}</td>
+                        <td>${formatNumber(row.y, 'html')}</td>
+                        <td>${formatNumber(row.x_sq, 'html')}</td>
+                        <td>${formatNumber(row.y_sq, 'html')}</td>
+                        <td>${formatNumber(row.xy, 'html')}</td>
+                    </tr>`;
+            });
+            tableFoot.innerHTML = `
+                <tr>
+                    <td>&Sigma;</td>
+                    <td>${formatNumber(sums.sum_x, 'html')}</td>
+                    <td>${formatNumber(sums.sum_y, 'html')}</td>
+                    <td>${formatNumber(sums.sum_x_sq, 'html')}</td>
+                    <td>${formatNumber(sums.sum_y_sq, 'html')}</td>
+                    <td>${formatNumber(sums.sum_xy, 'html')}</td>
+                </tr>`;
+        }
+        
+        /**
+         * Displays the final calculated regression values with LaTeX formulas.
+         */
+        function displaySummaryResults(results, sums, n) {
+            const summaryDiv = document.getElementById('summary-results');
+            const sign = results.b >= 0 ? '+' : '-';
+            const { a, b, r_sq, delta_b, delta_y_sq, delta_y, tk } = results;
+            const { sum_x, sum_y, sum_xy, sum_x_sq, sum_y_sq } = sums;
+
+            let htmlContent = `
+                <div class="equation-block">
+                    <strong>Slope (b)</strong>
+                    $$ b = \\frac{N \\sum xy - (\\sum x)(\\sum y)}{N \\sum x^2 - (\\sum x)^2} = \\frac{${n}(${formatNumber(sum_xy, 'latex')}) - (${formatNumber(sum_x, 'latex')})(${formatNumber(sum_y, 'latex')})}{${n}(${formatNumber(sum_x_sq, 'latex')}) - (${formatNumber(sum_x, 'latex')})^2} = \\mathbf{${formatNumber(b, 'latex')}} $$
+                </div>
+
+                <div class="equation-block">
+                    <strong>Y-Intercept (a)</strong>
+                    $$ a = \\frac{\\sum y - b \\sum x}{N} = \\frac{${formatNumber(sum_y, 'latex')} - (${formatNumber(b, 'latex')})(${formatNumber(sum_x, 'latex')})}{${n}} = \\mathbf{${formatNumber(a, 'latex')}} $$
+                </div>
+
+                <div class="equation-block">
+                    <strong>Standard Error of Estimate Squared (Δy²)</strong>
+                    $$ \\Delta y^2 = \\frac{1}{N-2} \\left[ \\sum y^2 - \\frac{(\\sum x^2)(\\sum y)^2 - 2(\\sum x)(\\sum y)(\\sum xy) + N(\\sum xy)^2}{N \\sum x^2 - (\\sum x)^2} \\right] $$
+                    $$ = \\frac{1}{${n}-2} \\left[ ${formatNumber(sum_y_sq, 'latex')} - \\frac{(${formatNumber(sum_x_sq, 'latex')})(${formatNumber(sum_y, 'latex')})^2 - 2(${formatNumber(sum_x, 'latex')})(${formatNumber(sum_y, 'latex')})(${formatNumber(sum_xy, 'latex')}) + ${n}(${formatNumber(sum_xy, 'latex')})^2}{${n}(${formatNumber(sum_x_sq, 'latex')}) - (${formatNumber(sum_x, 'latex')})^2} \\right] = \\mathbf{${formatNumber(delta_y_sq, 'latex')}} $$
+                </div>
+
+                <div class="equation-block">
+                    <strong>Standard Error of Estimate (Δy)</strong>
+                    $$ \\Delta y = \\sqrt{\\Delta y^2} = \\sqrt{${formatNumber(delta_y_sq, 'latex')}} = \\mathbf{${formatNumber(delta_y, 'latex')}} $$
+                </div>
+                
+                <div class="equation-block">
+                    <strong>Uncertainty of Slope (Δb)</strong>
+                     $$ \\Delta b = \\Delta y \\sqrt{ \\frac{N}{N \\sum x^2 - (\\sum x)^2} } = ${formatNumber(delta_y, 'latex')} \\sqrt{ \\frac{${n}}{${n}(${formatNumber(sum_x_sq, 'latex')}) - (${formatNumber(sum_x, 'latex')})^2} } = \\mathbf{${formatNumber(delta_b, 'latex')}} $$
+                </div>
+
+                <div class="equation-block">
+                    <strong>Analysis of Accuracy</strong>
+                    $$ \\text{Coefficient of Determination (R²)} = \\mathbf{${formatNumber(r_sq, 'latex')}} $$
+                    $$ \\text{Accuracy Level} = \\left(1 - \\frac{\\Delta b}{|b|}\\right) \\times 100\\% = \\left(1 - \\frac{${formatNumber(delta_b, 'latex')}}{|${formatNumber(b, 'latex')}|}\\right) \\times 100\\% = \\mathbf{${tk.toFixed(2)}\\%} $$
+                </div>
+
+                <hr>
+
+                <div class="equation-block final-equation">
+                    <strong>Final Result</strong>
+                     $$ b = (${formatNumber(b, 'latex')} \\pm ${formatNumber(delta_b, 'latex')}) $$
+                     $$ y = ${formatNumber(a, 'latex')} ${sign} ${formatNumber(Math.abs(b), 'latex')}x $$
+                </div>
+            `;
+            
+            summaryDiv.innerHTML = htmlContent;
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        /**
+         * Renders the scatter plot and regression line.
+         */
+        function displayRegressionGraph(xValues, yValues, a, b) {
+            const ctx = document.getElementById('regression-chart').getContext('2d');
+            const scatterData = xValues.map((val, index) => ({ x: val, y: yValues[index] }));
+            const minX = Math.min(...xValues), maxX = Math.max(...xValues);
+            const lineData = [{ x: minX, y: a + b * minX }, { x: maxX, y: a + b * maxX }];
+            
+            if (regressionChart) regressionChart.destroy();
+            
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            const textColor = isDarkMode ? '#e0e0e0' : '#333';
+
+            regressionChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Data Points', data: scatterData,
+                        backgroundColor: isDarkMode ? 'rgba(88, 153, 255, 0.7)' : 'rgba(0, 4, 68, 0.7)',
+                        pointRadius: 6, pointHoverRadius: 8
+                    }, {
+                        label: 'Regression Line', data: lineData, type: 'line',
+                        borderColor: 'rgba(75, 192, 192, 0.8)',
+                        borderWidth: 1.5,
+                        pointRadius: 0,
+                        borderDash: [5, 5]
+                    },
+                    {
+                        label: 'Data Path', data: scatterData,
+                        type: 'line',
+                        borderColor: 'rgba(217, 83, 79, 1)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true, 
+                    maintainAspectRatio: false, // Important for fixed height container
+                    scales: {
+                        x: { 
+                            type: 'linear', position: 'bottom', 
+                            title: { display: true, text: 'X Values', color: textColor },
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
+                        },
+                        y: { 
+                            title: { display: true, text: 'Y Values', color: textColor },
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
+                        }
+                    },
+                    plugins: { 
+                        legend: { labels: { color: textColor }},
+                        tooltip: { callbacks: {
+                           label: (ctx) => ctx.dataset.label === 'Data Points' ? `(x: ${ctx.parsed.x}, y: ${ctx.parsed.y})` : false
+                        }}
+                    }
+                }
+            });
+        }
+        
+        /**
+         * Formats a number for display, either as plain text or LaTeX.
+         */
+        function formatNumber(num, context = 'html') {
+            const useScientific = (Math.abs(num) < 0.001 || Math.abs(num) > 1000000) && num !== 0;
+
+            if (useScientific) {
+                const exponential = num.toExponential(4);
+                const parts = exponential.split('e');
+                const mantissa = parts[0];
+                let exponent = parts[1];
+                
+                if (context === 'latex') {
+                    exponent = exponent.replace('+', '');
+                    return `${mantissa} \\times 10^{${exponent}}`;
+                } else { 
+                    return `${mantissa} × 10<sup>${exponent}</sup>`;
+                }
+            }
+            
+            return parseFloat(num.toFixed(4)).toString();
+        }
+
+        /**
+         * Shows an error message.
+         */
+        function showError(message) {
+            errorMessageDiv.textContent = message;
+            errorMessageDiv.style.display = 'block';
+        }
+
+        /**
+         * Hides the error message.
+         */
+        function hideError() {
+            errorMessageDiv.style.display = 'none';
+        }
+
+        /**
+         * Handles theme switching.
+         */
+        themeToggle.addEventListener('change', () => {
+            if (themeToggle.checked) {
+                document.body.classList.add('dark-mode');
+                currentTheme = 'dark';
+            } else {
+                document.body.classList.remove('dark-mode');
+                currentTheme = 'light';
+            }
+            localStorage.setItem('theme', currentTheme);
+
+            // Redraw chart with new theme colors if it exists
+            if (lastChartData) {
+                displayRegressionGraph(lastChartData.xValues, lastChartData.yValues, lastChartData.a, lastChartData.b);
+            }
+        });
+
+        /**
+         * Applies saved theme on page load.
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            currentTheme = savedTheme;
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeToggle.checked = true;
+            }
+        });
+
+    </script>
+</body>
+</html>
